@@ -9,6 +9,7 @@ require 'pp'
 Mongoid.load!("config/mongoid.yml", :development)
 
 CUTOFF = 0.9 #dupe scores >= than .9 are ignored
+fout = open("unmatched.txt", 'w')
 
 clusters = open(ARGV.shift)
 gme = open(ARGV.shift)
@@ -18,8 +19,8 @@ gme.each do | line |
   enumchrons[l[0]] ||= [l[1],[]]
   enumchrons[l[0]][1] << l[2]
 end
-
-count = 0
+match_count = 0
+nomatch_count = 0
 line_number = 0
 clusters.each do | line | 
   line_number += 1
@@ -30,25 +31,33 @@ clusters.each do | line |
 
   gdids = c[2].split(/,/)
   gdids.each do | gdid |
-    source = SourceRecord.where(source_id: enumchrons[gd][0]).first
-    enumchrons[gd][1].each do | ec |
+    # skip it if it somehow got into the registry already
+    r = RegistryRecord.where(source_record_ids: enumchrons[gdid][0]).first
+    if r
+      next
+    end
+    source = SourceRecord.where(source_id: enumchrons[gdid][0]).first
+    enumchrons[gdid][1].each do | ec |
       if ec == 'NULL' 
         ec = ''
       end
       regrec = RegistryRecord::cluster(source, ec)
       if regrec
+        match_count += 1
         regrec.add_source source
       else
-        regrec = RegistryRecord.new([enumchrons[gd][0]], ec, 'low dupe score')
+        nomatch_count += 1
+        regrec = RegistryRecord.new([enumchrons[gdid][0]], ec, 'low dupe score')
+        #fout.write("#{enumchrons[gdid][0]}\t#{ec}")
       end
       regrec.save()
     end
 
-    count += 1
-    if count % 10000 == 0
-      print "\rcount #{count}"
-    end
+  end
+  if line_number % 10000 == 0
+    print "\line number #{line_number}"
   end
 end
-puts count
+puts match_count
+puts nomatch_count
 
