@@ -9,6 +9,7 @@ require 'json'
 require 'dotenv'
 require 'pp'
 
+begin
 Mongoid.load!("config/mongoid.yml", :development)
 
 ORGCODE = 'miaahdl'
@@ -51,13 +52,9 @@ end
 new_count = 0
 update_count = 0
 count = 0
-@start_time = Time.now()
-@update_time = 0
-@new_time = 0
-@regrec_update = 0
 rrcount = 0
 updates.each do | line | 
-  count += 1
+  count += 1 
   line.chomp!
   marc = JSON.parse line
 
@@ -79,9 +76,7 @@ updates.each do | line |
   enum_chrons.flatten!.uniq!
 
   # pre-existing source record that has been updated
-  update_time_start = Time.now()
   src = SourceRecord.where(org_code: ORGCODE, local_id: htid).first
-  new_time_start = Time.now()
   if src
     puts "exists_source: #{src[:local_id]}"
     #trust that it's an improvement
@@ -103,7 +98,6 @@ updates.each do | line |
         regrec.save
       end
     end
-    @update_time += Time.now() - update_time_start
   #new source record
   elsif field_008 =~ /^.{17}u.{10}f/ or 
         (oclcs.count > 0 and SourceRecord.in(oclc_resolved:oclcs).first)
@@ -129,24 +123,18 @@ updates.each do | line |
       end
       regrec.save
     end
-    @new_time += Time.now() - new_time_start
   #not an update or a new gov doc record
   else
     next
   end
 
-  if count > 10000
-    break
-  end
-  
 end
-all_time = Time.now() - @start_time
-puts "all time: #{all_time}"
-puts "update time: #{@update_time}"
-puts "new time: #{@new_time}"
-puts "regrec update time: #{@regrec_update}"
 puts "regrec count: #{rrcount}"
 puts "new srcs: #{new_count}"
 puts "updates: #{update_count}"
 
+rescue Exception => e
+  PP.pp e
+  puts e.backtrace
+end
 
