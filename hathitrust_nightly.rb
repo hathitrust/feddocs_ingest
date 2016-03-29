@@ -42,6 +42,16 @@ def normalize_enumc (e)
   return e;
 end 
 
+def has_sudoc marc
+  field_086 = marc['fields'].find {|f| f['086'] }
+  if field_086 and 
+    (field_086['086']['ind1'] == '0' or field_086['086']['a'] =~ /:/)
+    return true 
+  else
+    return false
+  end
+end
+
 
 fin = ARGV.shift
 if fin =~ /\.gz$/
@@ -55,6 +65,7 @@ count = 0
 rrcount = 0
 updates.each do | line | 
   count += 1 
+
   line.chomp!
   marc = JSON.parse line
 
@@ -68,6 +79,7 @@ updates.each do | line |
   #is this an edit, do we already have it?
   htid = marc['fields'].find {|f| f['001'] }['001']
   field_008 = marc['fields'].find {|f| f['008'] }['008']
+
 
   enum_chrons = []
   marc['fields'].select {|f| f['974']}.each do | f | 
@@ -100,7 +112,8 @@ updates.each do | line |
     end
   #new source record
   elsif field_008 =~ /^.{17}u.{10}f/ or 
-        (oclcs.count > 0 and SourceRecord.in(oclc_resolved:oclcs).first)
+        (oclcs.count > 0 and SourceRecord.in(oclc_resolved:oclcs).first) or
+        has_sudoc(marc)
     src = SourceRecord.new
     src.source = line
     src.source_blob = line
