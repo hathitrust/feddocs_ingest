@@ -90,6 +90,9 @@ updates.each do | line |
   # pre-existing source record that has been updated
   src = SourceRecord.where(org_code: ORGCODE, local_id: htid).first
   if src
+    #new enum chrons means new or updated regrec
+    new_enum_chrons = enum_chrons - src.enum_chrons
+
     puts "exists_source: #{src[:local_id]}"
     #trust that it's an improvement
     src.source = line
@@ -98,8 +101,6 @@ updates.each do | line |
     puts src.source_id    
     update_count += 1
 
-    #new enum chrons means new or updated regrec
-    new_enum_chrons = enum_chrons - src.enum_chrons
     if new_enum_chrons 
       new_enum_chrons.each do  |ec| 
         if regrec = RegistryRecord::cluster( src, ec)
@@ -110,6 +111,9 @@ updates.each do | line |
         regrec.save
       end
     end
+    src.enum_chrons = enum_chrons
+    src.save
+    RegistryRecord.where(source_record_id:src.source_id).each {|rr| rr.recollate}
   #new source record
   elsif field_008 =~ /^.{17}u.{10}f/ or 
         (oclcs.count > 0 and SourceRecord.in(oclc_resolved:oclcs).first) or
