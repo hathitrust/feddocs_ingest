@@ -61,6 +61,8 @@ else
 end
 new_count = 0
 update_count = 0
+src_count = {}
+rr_ids = []
 count = 0
 rrcount = 0
 updates.each do | line | 
@@ -90,15 +92,15 @@ updates.each do | line |
   # pre-existing source record that has been updated
   src = SourceRecord.where(org_code: ORGCODE, local_id: htid).first
   if src
+    src_count[src.source_id] = 0
     #new enum chrons means new or updated regrec
     new_enum_chrons = enum_chrons - src.enum_chrons
 
-    puts "exists_source: #{src[:local_id]}"
     #trust that it's an improvement
     src.source = line
     src.source_blob = line
     src.save
-    puts src.source_id    
+    #puts src.source_id    
     update_count += 1
 
     if new_enum_chrons 
@@ -109,11 +111,17 @@ updates.each do | line |
           regrec = RegistryRecord.new([src.source_id], ec, "HT update: #{fin}")
         end
         regrec.save
+        rr_ids << regrec.registry_id
       end
     end
     src.enum_chrons = enum_chrons
     src.save
-    RegistryRecord.where(source_record_id:src.source_id).each {|rr| rr.recollate}
+    RegistryRecord.where(source_record_ids:src.source_id).no_timeout.each do |rr| 
+      #rr.recollate #this blows up when dealing Serial Set or CFR
+      rr.save
+      src_count[src.source_id] += 1
+      rr_ids << rr.registry_id
+    end
   #new source record
   elsif field_008 =~ /^.{17}u.{10}f/ or 
         (oclcs.count > 0 and SourceRecord.in(oclc_resolved:oclcs).first) or
@@ -128,9 +136,12 @@ updates.each do | line |
     puts "new source: #{htid}"
     new_count += 1
 
+    src_count[src.source_id] = 0
+
     if enum_chrons == []
       enum_chrons << ""
     end
+
 
     enum_chrons.each do |ec| 
       if regrec = RegistryRecord::cluster( src, ec)
@@ -139,6 +150,8 @@ updates.each do | line |
         regrec = RegistryRecord.new([src.source_id], ec, "HT update: #{fin}")
       end
       regrec.save
+      src_count[src.source_id] += 1
+      rr_ids << regrec.registry_id
     end
   #not an update or a new gov doc record
   else
@@ -149,6 +162,7 @@ end
 puts "regrec count: #{rrcount}"
 puts "new srcs: #{new_count}"
 puts "updates: #{update_count}"
+PP.pp src_count 
 
 rescue Exception => e
   PP.pp e
