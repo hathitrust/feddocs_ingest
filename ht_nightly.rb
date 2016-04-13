@@ -10,7 +10,7 @@ require 'dotenv'
 require 'pp'
 
 begin
-Mongoid.load!("config/mongoid.yml", :development)
+Mongoid.load!(File.expand_path("../config/mongoid.yml", __FILE__), :development)
 
 ORGCODE = 'miaahdl'
 OCLCPAT = 
