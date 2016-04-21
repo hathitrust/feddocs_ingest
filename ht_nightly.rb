@@ -99,6 +99,7 @@ updates.each do | line |
     #trust that it's an improvement
     src.source = line
     src.source_blob = line
+    src.in_registry = true
     src.save
     #puts src.source_id    
     update_count += 1
@@ -132,6 +133,7 @@ updates.each do | line |
     src.org_code = ORGCODE
     src.local_id = htid
     src.enum_chrons = enum_chrons
+    src.in_registry = true
     src.save
     puts "new source: #{htid}"
     new_count += 1
