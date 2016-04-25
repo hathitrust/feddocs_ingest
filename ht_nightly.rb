@@ -5,6 +5,7 @@
 #
 require 'registry_record'
 require 'source_record'
+require 'normalize'
 require 'json'
 require 'dotenv'
 require 'pp'
@@ -20,27 +21,6 @@ OCLCPAT =
   (?:\(OCo?LC\))?(?:(?:ocm)|(?:ocn)|(?:on))
   )(\d+)
   /x
-
-#taken from HTPH::Hathinormalize
-def normalize_enumc (e)
-  e.upcase!;
-  e.gsub!(/ +/, " ");
-
-  # Deal with copies
-  e.gsub!(/\b(C|COPY?)[ .]*\d+/, "");
-  e.gsub!(/(\d+(ST|ND|RD|TH)|ANOTHER) COPY/, "");
-
-  e.gsub!(/VOL(UME)?/, "V");
-  # e.gsub!(/[\(\)\[\]\*]/, ""); # Commented out for enumchron parsing purposes, parens are important there.
-  e.gsub!(/SUPP?(L(EMENT)?)?S?/, "SUP");
-  e.gsub!(/&/, " AND ");
-  e.gsub!(/\.(\S)/, ". \\1");
-  e.gsub!(/\*/, "");
-  # e.gsub!(/ \-/, "-");
-  e.strip!;
-
-  return e;
-end 
 
 def has_sudoc marc
   field_086 = marc['fields'].find {|f| f['086'] }
@@ -85,7 +65,8 @@ updates.each do | line |
 
   enum_chrons = []
   marc['fields'].select {|f| f['974']}.each do | f | 
-    enum_chrons << f['974']['subfields'].select {|sf| sf['z']}.collect { |z| normalize_enumc(z['z']) }
+    enum_chrons << f['974']['subfields'].select {|sf| sf['z']}
+                    .collect { |z| Normalize.enum_chron(z['z']) }
   end
   enum_chrons.flatten!.uniq!
 
