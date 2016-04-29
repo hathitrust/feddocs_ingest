@@ -56,7 +56,7 @@ updates.each do | line |
   marc['fields'].select {|f| f['035']}.each do | f |
     oclcs << f['035']['subfields'].select {|sf| OCLCPAT.match(sf['a'])}.collect{|o| $1.to_i}
   end
-  oclcs.flatten!.uniq!
+  oclcs = oclcs.flatten.uniq
   
   #is this an edit, do we already have it?
   htid = marc['fields'].find {|f| f['001'] }['001']
@@ -68,7 +68,7 @@ updates.each do | line |
     enum_chrons << f['974']['subfields'].select {|sf| sf['z']}
                     .collect { |z| Normalize.enum_chron(z['z']) }
   end
-  enum_chrons.flatten!.uniq!
+  enum_chrons = enum_chrons.flatten.uniq
 
   # pre-existing source record that has been updated
   src = SourceRecord.where(org_code: ORGCODE, local_id: htid).first
