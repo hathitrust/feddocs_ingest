@@ -116,7 +116,7 @@ updates.each do | line |
     src.enum_chrons = enum_chrons
     src.in_registry = true
     src.save
-    puts "new source: #{htid}"
+    #puts "new source: #{htid}"
     new_count += 1
 
     src_count[src.source_id] = 0
@@ -145,7 +145,7 @@ end
 puts "regrec count: #{rrcount}"
 puts "new srcs: #{new_count}"
 puts "updates: #{update_count}"
-PP.pp src_count 
+#PP.pp src_count 
 
 rescue Exception => e
   PP.pp e
