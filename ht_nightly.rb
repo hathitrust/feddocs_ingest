@@ -101,6 +101,7 @@ updates.each do | line |
     RegistryRecord.where(source_record_ids:src.source_id).no_timeout.each do |rr| 
       #rr.recollate #this blows up when dealing Serial Set or CFR
       rr.save
+      rrcount += 1
       src_count[src.source_id] += 1
       rr_ids << rr.registry_id
     end
@@ -133,6 +134,7 @@ updates.each do | line |
         regrec = RegistryRecord.new([src.source_id], ec, "HT update: #{fin}")
       end
       regrec.save
+      rrcount += 1
       src_count[src.source_id] += 1
       rr_ids << regrec.registry_id
     end
