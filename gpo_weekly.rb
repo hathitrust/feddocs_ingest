@@ -63,12 +63,8 @@ while nil_count < 3 do #arbitrary
   src.source_blob = line
   src.org_code = "dgpo"
   src.local_id = gpo_id 
-  enum_chrons = src.extract_enum_chrons
-
-  src.enum_chrons = enum_chrons.flatten.uniq 
-
   if src.enum_chrons == []
-    enum_chrons << ""
+    src.enum_chrons << ""
   end
 
   src.save
