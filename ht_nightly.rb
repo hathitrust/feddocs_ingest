@@ -49,33 +49,23 @@ updates.each do | line |
   count += 1 
 
   line.chomp!
+
+  new_src = SourceRecord.new
+  new_src.org_code = "miaahdl"
+  new_src.source = line
+  new_src.local_id = new_src.extract_local_id
+
   marc = JSON.parse line
 
-  #find oclc
-  oclcs = []
-  marc['fields'].select {|f| f['035']}.each do | f |
-    oclcs << f['035']['subfields'].select {|sf| OCLCPAT.match(sf['a'])}.collect{|o| $1.to_i}
-  end
-  oclcs = oclcs.flatten.uniq
-  
-  #is this an edit, do we already have it?
-  htid = marc['fields'].find {|f| f['001'] }['001']
   field_008 = marc['fields'].find {|f| f['008'] }['008']
 
-
-  enum_chrons = []
-  marc['fields'].select {|f| f['974']}.each do | f | 
-    enum_chrons << f['974']['subfields'].select {|sf| sf['z']}
-                    .collect { |z| Normalize.enum_chron(z['z']) }
-  end
-  enum_chrons = enum_chrons.flatten.uniq
-
+     
   # pre-existing source record that has been updated
-  src = SourceRecord.where(org_code: ORGCODE, local_id: htid).first
+  src = SourceRecord.where(org_code: ORGCODE, local_id: new_src.local_id).first
   if src
     src_count[src.source_id] = 0
     #new enum chrons means new or updated regrec
-    new_enum_chrons = enum_chrons - src.enum_chrons
+    new_enum_chrons = new_src.enum_chrons - src.enum_chrons
 
     #trust that it's an improvement
     src.source = line
@@ -96,7 +86,7 @@ updates.each do | line |
         rr_ids << regrec.registry_id
       end
     end
-    src.enum_chrons = enum_chrons
+    src.enum_chrons = new_src.enum_chrons
     src.save
     RegistryRecord.where(source_record_ids:src.source_id).no_timeout.each do |rr| 
       #rr.recollate #this blows up when dealing Serial Set or CFR
@@ -107,36 +97,32 @@ updates.each do | line |
     end
   #new source record
   elsif field_008 =~ /^.{17}u.{10}f/ or 
-        (oclcs.count > 0 and SourceRecord.in(oclc_resolved:oclcs).first) or
+        (new_src.oclc_resolved.count > 0 and SourceRecord.in(oclc_resolved:new_src.oclc_resolved).first) or
         has_sudoc(marc)
-    src = SourceRecord.new
-    src.source = line
-    src.source_blob = line
-    src.org_code = ORGCODE
-    src.local_id = htid
-    src.enum_chrons = enum_chrons
-    src.in_registry = true
-    src.save
+    new_src.source_blob = line
+    new_src.in_registry = true
+    new_src.save
     #puts "new source: #{htid}"
     new_count += 1
+    puts new_src.local_id+' '+new_src.oclc_resolved.join(', ')
 
-    src_count[src.source_id] = 0
+    src_count[new_src.source_id] = 0
 
-    if enum_chrons == []
-      enum_chrons << ""
+    if new_src.enum_chrons == []
+      new_src.enum_chrons << ""
     end
 
 
-    enum_chrons.each do |ec| 
-      if regrec = RegistryRecord::cluster( src, ec)
-        regrec.add_source(src)
+    new_src.enum_chrons.each do |ec| 
+      if regrec = RegistryRecord::cluster( new_src, ec)
+        regrec.add_source(new_src)
       else
-        regrec = RegistryRecord.new([src.source_id], ec, "HT update: #{fin}")
+        regrec = RegistryRecord.new([new_src.source_id], ec, "HT update: #{fin}")
       end
       regrec.save
       rrcount += 1
-      src_count[src.source_id] += 1
-      rr_ids << regrec.registry_id
+      src_count[new_src.source_id] += 1
+      #rr_ids << regrec.registry_id
     end
   #not an update or a new gov doc record
   else
