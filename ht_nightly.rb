@@ -104,7 +104,6 @@ updates.each do | line |
     new_src.save
     #puts "new source: #{htid}"
     new_count += 1
-    puts new_src.local_id+' '+new_src.oclc_resolved.join(', ')
 
     src_count[new_src.source_id] = 0
 
