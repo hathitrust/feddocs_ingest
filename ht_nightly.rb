@@ -34,6 +34,7 @@ end
 
 
 fin = ARGV.shift
+puts fin
 if fin =~ /\.gz$/
   updates = Zlib::GzipReader.open(fin)
 else
