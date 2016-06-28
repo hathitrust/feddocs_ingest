@@ -67,6 +67,7 @@ while nil_count < 3 do #arbitrary
     src.enum_chrons << ""
   end
 
+  src.in_registry = true
   src.save
 
   #3. cluster/create regrecs
