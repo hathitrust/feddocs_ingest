@@ -79,6 +79,19 @@ while nil_count < 3 do #arbitrary
       regrec = RegistryRecord.new([src.source_id], ec, "GPO weekly")
       rrcount += 1
     end
+     
+    #GPO does something dumb with DNA
+    if !regrec.subject_t.nil? and regrec.subject_t.include? "Norske arbeiderparti."
+      regrec.subject_t.delete("Norske arbeiderparti.")
+      if !regrec.subject_t.include? "DNA"
+        regrec.subject_t << "DNA"
+      end
+      regrec.subject_topic_facet.delete("Norske arbeiderparti.")
+      if !regrec.subject_topic_facet.include? "DNA"
+        regrec.subject_topic_facet << "DNA"
+      end
+    end
+
     regrec.save
   end
 
