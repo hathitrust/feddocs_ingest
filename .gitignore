@@ -8,3 +8,7 @@ config/*
 garbage/
 Gemfile.lock
 nohup.out
+data/*
+*.swp
+*.tmp
+.ruby-version
