@@ -18,6 +18,7 @@ total = 0
 num_govdocs = 0
 num_new_rr = 0
 num_new_bib = 0
+num_pre_existing = 0
 
 ORGCODE = "txcm"
 
@@ -76,14 +77,12 @@ open(ARGV.shift,'r').each do | line |
     src.in_registry = true
     src.save
     
-    update_count += 1
-
     if new_enum_chrons 
       new_enum_chrons.each do |ec| 
         if regrec = RegistryRecord::cluster( src, ec)
           regrec.add_source(src)
         else
-          regrec = RegistryRecord.new([src.source_id], ec, "TXCM update: #{infile}")
+          regrec = RegistryRecord.new([src.source_id], ec, "TXCM update")
           num_new_rr += 1
         end
         regrec.save
@@ -115,7 +114,7 @@ open(ARGV.shift,'r').each do | line |
       if regrec = RegistryRecord::cluster( new_src, ec)
         regrec.add_source(new_src)
       else
-        regrec = RegistryRecord.new([new_src.source_id], ec, "TXCM update: #{infile}")
+        regrec = RegistryRecord.new([new_src.source_id], ec, "TXCM update")
         num_new_rr += 1
       end
       regrec.save
@@ -128,5 +127,5 @@ end # each record
 puts "# of Govdoc records: #{num_govdocs}"
 puts "# of new Registry Records: #{num_new_rr}"
 puts "# of new Govdoc bib records: #{num_new_bib}"
-
+puts "# of updated TAMU records: #{num_pre_existing}"
 
