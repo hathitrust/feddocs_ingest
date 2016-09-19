@@ -67,8 +67,11 @@ while nil_count < 3 do #arbitrary
   end
 
   # '$' has snuck into at least one 040. It's wrong and Mongo chokes on it.
-  src.source['fields'].select {|f| f.keys[0] == '040'}[0]['040']['subfields'].delete_if {|sf| sf.keys[0] == '$'}
-
+  s040 = src.source['fields'].select {|f| f.keys[0] == '040'}
+  if s040 != []
+    s040[0]['040']['subfields'].delete_if {|sf| sf.keys[0] == '$'}
+  end
+  
   src.in_registry = true
   src.save
 
