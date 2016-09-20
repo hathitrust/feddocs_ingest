@@ -99,7 +99,8 @@ updates.each do | line |
   #new source record
   elsif field_008 =~ /^.{17}u.{10}f/ or 
         (new_src.oclc_resolved.count > 0 and SourceRecord.in(oclc_resolved:new_src.oclc_resolved).first) or
-        has_sudoc(marc)
+       	new_src.extract_sudocs.count > 0
+	#has_sudoc(marc)
     new_src.source_blob = line
     new_src.in_registry = true
     new_src.save
