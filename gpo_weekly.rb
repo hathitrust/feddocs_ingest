@@ -3,9 +3,11 @@ require 'pp'
 require 'marc'
 require 'json'
 require 'stringio'
-require 'source_record'
-require 'registry_record'
+require 'registry/registry_record'
+require 'registry/source_record'
 require 'dotenv'
+SourceRecord = Registry::SourceRecord
+RegistryRecord = Registry::RegistryRecord
 
 Dotenv.load!
 

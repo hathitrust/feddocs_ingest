@@ -3,13 +3,15 @@
 # create new Registry Records if no match can be found
 # we are NOT recalculating clustering!!!
 #
-require 'registry_record'
-require 'source_record'
+require 'registry/registry_record'
+require 'registry/source_record'
 require 'normalize'
 require 'json'
 require 'dotenv'
 require 'pp'
 
+SourceRecord = Registry::SourceRecord
+RegistryRecord = Registry::RegistryRecord
 begin
 Mongoid.load!(File.expand_path("../config/mongoid.yml", __FILE__), :development)
 
