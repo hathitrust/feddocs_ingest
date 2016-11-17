@@ -10,5 +10,5 @@ Gemfile.lock
 nohup.out
 data/*
 *.swp
-*.tmp
+*tmp
 .ruby-version

@@ -62,20 +62,19 @@ end
 ARGV.each do | infile |
   reader = MARC::Reader.new(infile, encoding_options)
   for record in reader
-    puts record.to_hash.to_json
     total += 1
+    
+    # silly, but we usually expect json
+    line = record.to_hash.to_json
 
     new_src = SourceRecord.new
     new_src.org_code = ORGCODE 
-    new_src.source = record.to_hash.to_json # silly, but we usually expect json
-    new_src.local_id = src.extract_local_id
+    new_src.source = line 
+    new_src.local_id = new_src.extract_local_id
 
     if new_src.source.nil?
       next
     end
-    
-    # a GovDoc!
-    num_govdocs += 1
 
     # pre-existing source record that has been updated
     src = SourceRecord.where(org_code: ORGCODE, local_id: new_src.local_id).first
@@ -130,7 +129,7 @@ ARGV.each do | infile |
         if regrec = RegistryRecord::cluster( new_src, ec)
           regrec.add_source(new_src)
         else
-          regrec = RegistryRecord.new([new_src.source_id], ec, "HT update: #{fin}")
+          regrec = RegistryRecord.new([new_src.source_id], ec, "MH update: #{infile}")
           num_new_rr += 1
         end
         regrec.save
@@ -140,8 +139,9 @@ ARGV.each do | infile |
      next
     end 
   end # each record
+  puts "# of Govdoc records: #{num_govdocs}"
+  puts "# of new Registry Records: #{num_new_rr}"
+  puts "# of new Govdoc bib records: #{num_new_bib}"
 end # each .mrc file
 
-puts "# of Govdoc records: #{num_govdocs}"
-puts "# of new Registry Records: #{num_new_rr}"
-puts "# of new Govdoc bib records: #{num_new_bib}"
+
