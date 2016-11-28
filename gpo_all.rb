@@ -43,7 +43,7 @@ puts "highest id: #{highest_id}"
 
 #2. ask for recs by id until we get to the highest id 
 (1..highest_id.to_i).each do |current_id|
-  sleep(0.2) #be polite
+  sleep(0.8) #be polite
   
   rset = con.search("@attr 1=12 #{current_id}")
   if !rset[0]
