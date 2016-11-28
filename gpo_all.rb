@@ -42,8 +42,8 @@ highest_id = SourceRecord.where(org_code:"dgpo").max(:local_id)
 puts "highest id: #{highest_id}"
 
 #2. ask for recs by id until we get to the highest id 
-(1..50).each do |current_id|
-  sleep(.3) #be polite
+(1..highest_id.to_i).each do |current_id|
+  sleep(0.2) #be polite
   
   rset = con.search("@attr 1=12 #{current_id}")
   if !rset[0]
@@ -66,7 +66,6 @@ puts "highest id: #{highest_id}"
     src = SourceRecord.new
     new_count += 1
     src.org_code = "dgpo"
-    src.local_id = gpo_id 
   else
     update_count += 1
   end
@@ -75,6 +74,10 @@ puts "highest id: #{highest_id}"
   if src.enum_chrons == []
     src.enum_chrons << ""
   end
+ 
+  #this has to come after src.source = line which also sets local_id
+  #src.extract_local_id set it as a 0 padded string. We want gpo ids to be ints
+  src.local_id = gpo_id 
 
   # '$' has snuck into at least one 040. It's wrong and Mongo chokes on it.
   s040 = src.source['fields'].select {|f| f.keys[0] == '040'}
