@@ -42,10 +42,18 @@ highest_id = SourceRecord.where(org_code:"dgpo").max(:local_id)
 puts "highest id: #{highest_id}"
 
 #2. ask for recs by id until we get to the highest id 
-(1..highest_id.to_i).each do |current_id|
-  sleep(0.8) #be polite
-  
-  rset = con.search("@attr 1=12 #{current_id}")
+(425717..highest_id.to_i).each do |current_id|
+  sleep(1.1) #be polite
+
+  begin  
+    rset = con.search("@attr 1=12 #{current_id}")
+  rescue Exception => e
+    sleep(10)
+    puts e.backtrace
+    puts "retry: #{current_id}"
+    retry 
+  end
+
   if !rset[0]
     nil_count += 1
     puts "nil at #{current_id}"
