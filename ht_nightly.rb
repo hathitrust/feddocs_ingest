@@ -93,7 +93,7 @@ updates.each do | line |
     src.save
     RegistryRecord.where(source_record_ids:src.source_id).no_timeout.each do |rr| 
       #rr.recollate #this blows up when dealing Serial Set or CFR
-      rr.save
+      #rr.save
       rrcount += 1
       src_count[src.source_id] += 1
       rr_ids << rr.registry_id
