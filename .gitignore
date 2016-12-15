@@ -12,3 +12,5 @@ data/*
 *.swp
 *tmp
 .ruby-version
+.credentials
+.client-secret.json
