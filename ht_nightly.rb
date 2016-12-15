@@ -24,17 +24,6 @@ OCLCPAT =
   )(\d+)
   /x
 
-def has_sudoc marc
-  field_086 = marc['fields'].find {|f| f['086'] }
-  if field_086 and 
-    (field_086['086']['ind1'] == '0' or field_086['086']['a'] =~ /:/)
-    return true 
-  else
-    return false
-  end
-end
-
-
 fin = ARGV.shift
 puts fin
 if fin =~ /\.gz$/
@@ -57,6 +46,11 @@ updates.each do | line |
   new_src.org_code = "miaahdl"
   new_src.source = line
   new_src.local_id = new_src.extract_local_id
+ 
+  # fuhgettaboutit 
+  if !new_src.is_govdoc
+    next
+  end
 
   marc = JSON.parse line
 
@@ -99,10 +93,7 @@ updates.each do | line |
       rr_ids << rr.registry_id
     end
   #new source record
-  elsif field_008 =~ /^.{17}u.{10}f/ or 
-        (new_src.oclc_resolved.count > 0 and SourceRecord.in(oclc_resolved:new_src.oclc_resolved).first) or
-       	new_src.extract_sudocs.count > 0
-	#has_sudoc(marc)
+  else 
     new_src.source_blob = line
     new_src.in_registry = true
     new_src.save
@@ -127,9 +118,6 @@ updates.each do | line |
       src_count[new_src.source_id] += 1
       #rr_ids << regrec.registry_id
     end
-  #not an update or a new gov doc record
-  else
-    next
   end
 
 end
