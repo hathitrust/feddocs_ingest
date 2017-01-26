@@ -61,13 +61,13 @@ zeph.each do | line |
   old_src = SourceRecord.where(org_code: ORGCODE, local_id: src.local_id).first
   if !old_src # a newbie, just add it
     new_zeph_ids[src.local_id] += 1
-    res = src.add_to_registry
+    res = src.add_to_registry "HT Monthly update: #{fin}"
     new_ecs_count += res[:num_new]
   else 
     # the old list of enum_chrons doesn't match the new list
     # if registry_src.enum_chrons & old_src.enum_chrons != src.enum_chrons
     old_src.source = line
-    res = old_src.update_in_registry
+    res = old_src.update_in_registry "HT Monthly update: #{fin}"
     new_ecs_count += res[:num_new]
     new_holdings_ids[old_src.local_id] += res[:num_new]
     deleted_ecs_count += res[:num_deleted]
@@ -87,7 +87,7 @@ SourceRecord.where(org_code: ORGCODE,
                    deprecated_timestamp:{"$exists":0}).no_timeout.each do |src|
   if !gd_zeph_ids.has_key?(src.local_id) and 
     !all_zeph_ids.has_key?(src.local_id)
-    res = src.remove_from_registry
+    res = src.remove_from_registry "Not found in HT Monthly update: #{fin}"
     src.deprecate "Not found in HT Monthly update: #{fin}"
     deleted_ecs_count += res
     deleted_zeph_ids[src.local_id] += 1
