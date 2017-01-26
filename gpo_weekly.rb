@@ -58,52 +58,27 @@ while nil_count < 3 do #arbitrary
 
   gpo_id = marc['001'].value.to_i
   line = marc.to_hash.to_json #round about way of doing things 
-  src = SourceRecord.new
+  src = SourceRecord.where(org_code:"dgpo", 
+                           local_id:gpo_id).first
+  src ||= SourceRecord.new
   new_count += 1
   src.org_code = "dgpo"
   src.source = line
   src.source_blob = line
   src.local_id = gpo_id 
-  if src.enum_chrons == []
-    src.enum_chrons << ""
-  end
-
   # '$' has snuck into at least one 040. It's wrong and Mongo chokes on it.
   s040 = src.source['fields'].select {|f| f.keys[0] == '040'}
   if s040 != []
     s040[0]['040']['subfields'].delete_if {|sf| sf.keys[0] == '$'}
   end
-  
   src.in_registry = true
   src.save
+  res = src.add_to_registry "GPO weekly."
+  rrcount += res[:num_new]
 
-  #3. cluster/create regrecs
-  src.enum_chrons.each do |ec| 
-    if regrec = RegistryRecord::cluster( src, ec)
-      regrec.add_source(src)
-      update_count += 1
-    else
-      regrec = RegistryRecord.new([src.source_id], ec, "GPO weekly")
-      rrcount += 1
-    end
-     
-    #GPO does something dumb with DNA
-    if !regrec.subject_t.nil? and regrec.subject_t.include? "Norske arbeiderparti."
-      regrec.subject_t.delete("Norske arbeiderparti.")
-      if !regrec.subject_t.include? "DNA"
-        regrec.subject_t << "DNA"
-      end
-      regrec.subject_topic_facet.delete("Norske arbeiderparti.")
-      if !regrec.subject_topic_facet.include? "DNA"
-        regrec.subject_topic_facet << "DNA"
-      end
-    end
-
-    regrec.save
-  end
 end
 
 puts "gpo new regrec count: #{rrcount}"
 puts "gpo new srcs: #{new_count}"
-puts "gpo regrec updates: #{update_count}"
+#puts "gpo regrec updates: #{update_count}"
 
