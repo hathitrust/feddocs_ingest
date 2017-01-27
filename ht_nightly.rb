@@ -48,7 +48,7 @@ updates.each do | line |
  
   # fuhgettaboutit 
   if !new_src.is_govdoc and (SourceRecord.where(org_code:ORGCODE,
-                                                local_id:src.local_id,
+                                                local_id:new_src.local_id,
                                                 deprecated_timestamp:{"$exists":0}).count == 0)
 
     next
