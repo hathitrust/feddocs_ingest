@@ -56,7 +56,7 @@ while nil_count < 3 do #arbitrary
     next
   end
 
-  gpo_id = marc['001'].value.to_i
+  gpo_id = marc['001'].value.gsub(/^0+/, '')
   line = marc.to_hash.to_json #round about way of doing things 
   src = SourceRecord.where(org_code:"dgpo", 
                            local_id:gpo_id).first
@@ -65,7 +65,6 @@ while nil_count < 3 do #arbitrary
   src.org_code = "dgpo"
   src.source = line
   src.source_blob = line
-  src.local_id = gpo_id 
   # '$' has snuck into at least one 040. It's wrong and Mongo chokes on it.
   s040 = src.source['fields'].select {|f| f.keys[0] == '040'}
   if s040 != []

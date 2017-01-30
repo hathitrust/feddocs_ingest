@@ -75,7 +75,7 @@ zeph.each do | line |
   end
 end
 
-#only want source records created after file date
+#only want source records created before file date
 date = fin.match(/(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})/)
 #mongo's objectids have their creation date in them, making it the 
 #easiest way to search by insertion date
