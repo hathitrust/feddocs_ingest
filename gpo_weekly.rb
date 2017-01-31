@@ -31,7 +31,15 @@ new_count = 0
 update_count = 0
 
 #1. get highest existing GPO id 
-highest_id = SourceRecord.where(org_code:"dgpo").max(:local_id)
+# local_id is unpadded string, need to get them all and then sort
+highest_id = 0
+SourceRecord.where(org_code:"dgpo", 
+                   deprecated_timestamp:{"$exists":0}).pluck(:local_id).each do |lid|
+  if lid.to_i > highest_id
+    highest_id = lid 
+  end
+end
+
 puts "highest id: #{highest_id}"
 
 #2. ask for recs by id until we get too many consecutive nils 
