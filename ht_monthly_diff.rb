@@ -21,6 +21,7 @@ OCLCPAT =
   )(\d+)
   /x
 
+puts DateTime.now
 fin = ARGV.shift
 puts fin
 if fin =~ /\.gz$/
@@ -117,3 +118,4 @@ summ_out.puts "# of non-gd Zephir ids in registry: #{non_gd_ids.keys.count}"
     s_out.puts [id, somecount].join("\t")
   end
 end
+puts DateTime.now
