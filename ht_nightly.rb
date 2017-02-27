@@ -9,6 +9,7 @@ require 'normalize'
 require 'json'
 require 'dotenv'
 require 'pp'
+include Registry::Series
 
 SourceRecord = Registry::SourceRecord
 RegistryRecord = Registry::RegistryRecord

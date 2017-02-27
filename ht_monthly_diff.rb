@@ -7,6 +7,7 @@ require 'normalize'
 require 'json'
 require 'dotenv'
 require 'pp'
+include Registry::Series
 
 SourceRecord = Registry::SourceRecord
 RegistryRecord = Registry::RegistryRecord
@@ -95,7 +96,7 @@ SourceRecord.where(org_code: ORGCODE,
   elsif !gd_zeph_ids.has_key?(src.local_id) and
     all_zeph_ids.has_key?(src.local_id)
     non_gd_ids[src.local_id] += 1
-    nongd.puts src.enum_chrons.count.to_s+"\t"+src.local_id+"\t"+src.oclc_resolved
+    nongd.puts src.enum_chrons.count.to_s+"\t"+src.local_id+"\t"+src.oclc_resolved.join(", ")
   #else we're good
   end
 end 
