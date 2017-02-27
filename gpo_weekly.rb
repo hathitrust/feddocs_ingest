@@ -36,7 +36,7 @@ highest_id = 0
 SourceRecord.where(org_code:"dgpo", 
                    deprecated_timestamp:{"$exists":0}).pluck(:local_id).each do |lid|
   if lid.to_i > highest_id
-    highest_id = lid 
+    highest_id = lid.to_i
   end
 end
 
@@ -46,7 +46,7 @@ puts "highest id: #{highest_id}"
 nil_count = 0
 current_id = highest_id.to_i
 while nil_count < 3 do #arbitrary
-  sleep(1) #be polite
+  sleep(5) #be polite
   current_id += 1
   
   rset = con.search("@attr 1=12 #{current_id}")
