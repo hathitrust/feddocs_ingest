@@ -49,6 +49,7 @@ zeph.each do | line |
   src = SourceRecord.new
   src.org_code = "miaahdl"
   src.source = line
+  src.save
   all_zeph_ids[src.local_id] = 1
    
   # fuhgettaboutit 

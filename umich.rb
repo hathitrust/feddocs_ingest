@@ -61,13 +61,13 @@ ARGV.each do | infile |
       src.source_blob = line
       src.in_registry = true   
       src.save
-      res = src.add_to_registry "UMich update. 2017-03-01"
+      res = src.add_to_registry "UMich update. 2017-03-01b"
       num_new_rr += res[:num_new]
     #new source record
     elsif 
       @new_src.in_registry = true
       @new_src.save
-      res = @new_src.add_to_registry "UMich update. 2017-03-01"
+      res = @new_src.add_to_registry "UMich update. 2017-03-01b"
       num_new_rr += res[:num_new]
       num_govdocs += 1
       num_new_bib += 1
