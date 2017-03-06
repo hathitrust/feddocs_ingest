@@ -49,7 +49,6 @@ zeph.each do | line |
   src = SourceRecord.new
   src.org_code = "miaahdl"
   src.source = line
-  src.save
   all_zeph_ids[src.local_id] = 1
    
   # fuhgettaboutit 
@@ -63,6 +62,7 @@ zeph.each do | line |
 
   old_src = SourceRecord.where(org_code: ORGCODE, local_id: src.local_id).first
   if !old_src # a newbie, just add it
+    src.save
     new_zeph_ids[src.local_id] += 1
     res = src.add_to_registry "HT Monthly update: #{fin}"
     new_ecs_count += res[:num_new]
@@ -70,6 +70,7 @@ zeph.each do | line |
     # the old list of enum_chrons doesn't match the new list
     # if registry_src.enum_chrons & old_src.enum_chrons != src.enum_chrons
     old_src.source = line
+    old_src.save
     res = old_src.update_in_registry "HT Monthly update: #{fin}"
     new_ecs_count += res[:num_new]
     new_holdings_ids[old_src.local_id] += res[:num_new]
