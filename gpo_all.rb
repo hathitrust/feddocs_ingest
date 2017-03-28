@@ -74,7 +74,7 @@ puts "highest id: #{highest_id}"
 
   gpo_id = marc['001'].value.to_i
   line = marc.to_hash.to_json #round about way of doing things 
-  src = SourceRecord.where(org_code:"dgpo", local_id:gpo_id).first
+  src = SourceRecord.where(org_code:"dgpo", local_id:gpo_id.to_s).first
   if src.nil?
     src = SourceRecord.new
     new_count += 1
@@ -89,8 +89,8 @@ puts "highest id: #{highest_id}"
   end
  
   #this has to come after src.source = line which also sets local_id
-  #src.extract_local_id set it as a 0 padded string. We want gpo ids to be ints
-  src.local_id = gpo_id 
+  #src.extract_local_id set it as a 0 padded string. 0 padding is evil
+  src.local_id = gpo_id.to_i.to_s
 
   # '$' has snuck into at least one 040. It's wrong and Mongo chokes on it.
   s040 = src.source['fields'].select {|f| f.keys[0] == '040'}
