@@ -45,7 +45,7 @@ puts "highest id: #{highest_id}"
 #2. ask for recs by id until we get too many consecutive nils 
 nil_count = 0
 current_id = highest_id.to_i
-while nil_count < 3 do #arbitrary
+while nil_count < 10 do #arbitrary
   sleep(5) #be polite
   current_id += 1
   
