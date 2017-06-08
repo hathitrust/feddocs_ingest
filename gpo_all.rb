@@ -83,7 +83,6 @@ puts "highest id: #{highest_id}"
     update_count += 1
   end
   src.source = line
-  src.source_blob = line
   if src.enum_chrons == []
     src.enum_chrons << ""
   end

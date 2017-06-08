@@ -58,7 +58,6 @@ ARGV.each do | infile |
     if src
       num_govdocs += 1
       src.source = line
-      src.source_blob = line
       src.in_registry = true   
       src.save
       res = src.add_to_registry "UMich update. 2017-03-01b"

@@ -72,7 +72,6 @@ while nil_count < 10 do #arbitrary
   new_count += 1
   src.org_code = "dgpo"
   src.source = line
-  src.source_blob = line
   # '$' has snuck into at least one 040. It's wrong and Mongo chokes on it.
   s040 = src.source['fields'].select {|f| f.keys[0] == '040'}
   if s040 != []

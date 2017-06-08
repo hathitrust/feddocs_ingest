@@ -47,7 +47,6 @@ updates.each do | line |
 
   src = SourceRecord.new
   src.source = line
-  src.source_blob = line
   src.org_code = ORGCODE
   src.local_id = src.extract_local_id.to_i
   enum_chrons = src.extract_enum_chrons

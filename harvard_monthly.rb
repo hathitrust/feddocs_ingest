@@ -70,7 +70,6 @@ ARGV.each do | infile |
     #new source record
     elsif 
       num_govdocs += 1
-      @new_src.source_blob = line
       @new_src.in_registry = true
       @new_src.save
       num_new_bib += 1

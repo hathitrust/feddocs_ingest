@@ -67,7 +67,6 @@ updates.each do | line |
 
     #trust that it's an improvement
     src.source = line
-    src.source_blob = line
     src.in_registry = true
     src.save
     res = src.update_in_registry "HT update: #{fin}"
@@ -77,7 +76,6 @@ updates.each do | line |
     src_count[src.source_id] += 1
   #new source record
   else 
-    new_src.source_blob = line
     new_src.in_registry = true
     new_src.save
     #puts "new source: #{htid}"

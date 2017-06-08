@@ -73,7 +73,6 @@ open(ARGV.shift,'r').each do | line |
 
     #trust that it's an improvement
     src.source = line
-    src.source_blob = line
     src.in_registry = true
     src.save
     
@@ -101,7 +100,6 @@ open(ARGV.shift,'r').each do | line |
         (new_src.oclc_resolved.count > 0 and 
          SourceRecord.in(oclc_resolved:new_src.oclc_resolved).where(deprecated_timestamp:{"$exists":0}).exists?)
     num_govdocs += 1
-    new_src.source_blob = line
     new_src.in_registry = true
     new_src.save
     num_new_bib += 1
