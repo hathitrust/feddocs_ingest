@@ -38,6 +38,7 @@ src_count = {}
 rr_ids = []
 count = 0
 rrcount = 0
+author_count = 0
 updates.each do | line | 
   count += 1 
 
@@ -51,7 +52,9 @@ updates.each do | line |
   if !new_src.is_govdoc and (SourceRecord.where(org_code:ORGCODE,
                                                 local_id:new_src.local_id,
                                                 deprecated_timestamp:{"$exists":0}).count == 0)
-
+    if new_src.has_approved_author?
+      author_count += 1
+      puts [new_src.local_id, new_src.author_lccns.join(', ')].join("\t")
     next
   end
 
@@ -92,6 +95,7 @@ end
 puts "regrec count: #{rrcount}"
 puts "new srcs: #{new_count}"
 puts "updates: #{update_count}"
+puts "would have been included based on author: #{author_count}"
 #PP.pp src_count 
 
 rescue Exception => e
