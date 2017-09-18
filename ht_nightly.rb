@@ -38,7 +38,13 @@ src_count = {}
 rr_ids = []
 count = 0
 rrcount = 0
+#tracking why it's a govdoc
 author_count = 0
+oclc_count = 0
+gpo_num_count = 0
+sudoc_count = 0
+count_008 = 0
+
 updates.each do | line | 
   count += 1 
 
@@ -52,9 +58,6 @@ updates.each do | line |
   if !new_src.is_govdoc and (SourceRecord.where(org_code:ORGCODE,
                                                 local_id:new_src.local_id,
                                                 deprecated_timestamp:{"$exists":0}).count == 0)
-    if new_src.has_approved_author?
-      author_count += 1
-      puts [new_src.local_id, new_src.author_lccns.join(', ')].join("\t")
     next
   end
 
@@ -89,13 +92,31 @@ updates.each do | line |
     res = new_src.add_to_registry "HT update: #{fin}"
     rrcount += res[:num_new]
     src_count[new_src.source_id] += 1
+
+    # tracking why we included it
+    if new_src.marc['008'].value !~ /^.{17}u.{10}f/
+      count_008 += 1
+      sudoc_count += 1 if new_src.sudocs.count > 0
+      gpo_num_count += 1 if new_src.gpo_item_numbers.count > 0 
+      author_count += 1 if new_src.has_approved_author?
+      if new_src.sudocs.count == 0 and
+        new_src.gpo_item_numbers.count == 0 and
+        !new_src.has_approved_author?
+        oclc_count += 1
+      end
+    end
   end
 
 end
 puts "regrec count: #{rrcount}"
-puts "new srcs: #{new_count}"
 puts "updates: #{update_count}"
-puts "would have been included based on author: #{author_count}"
+#puts "would have been included based on author: #{author_count}"
+puts "new srcs: #{new_count}"
+puts "# of new sources without an 008 indicating GovDoc: #{count_008}"
+puts "# of new sources with Author indicating GovDoc: #{author_count}"
+puts "# of new sources with GPO# indicating GovDoc: #{gpo_num_count}"
+puts "# of new sources with SuDoc indicating GovDoc: #{sudoc_count}"
+puts "# of new sources with OCLC indicating GovDoc: #{oclc_count}"
 #PP.pp src_count 
 
 rescue Exception => e
