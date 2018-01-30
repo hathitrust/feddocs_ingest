@@ -11,7 +11,7 @@ RegistryRecord = Registry::RegistryRecord
 
 Dotenv.load!
 
-Mongoid.load!(File.expand_path("../config/mongoid.yml", __FILE__), :development)
+Mongoid.load!(ENV['MONGOID_CONF'], :production)
 
 con = ZOOM::Connection.new()
 con.user = 'z39'
