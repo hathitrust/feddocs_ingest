@@ -11,7 +11,7 @@ include Registry::Series
 
 SourceRecord = Registry::SourceRecord
 RegistryRecord = Registry::RegistryRecord
-Mongoid.load!(File.expand_path("../config/mongoid.yml", __FILE__), :development)
+Mongoid.load!(File.expand_path(ENV['MONGOID_CONF'], __FILE__), :production)
 
 ORGCODE = 'miaahdl'
 OCLCPAT = 
