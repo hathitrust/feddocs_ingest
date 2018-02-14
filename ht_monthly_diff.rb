@@ -52,7 +52,7 @@ zeph.each do | line |
   all_zeph_ids[src.local_id] = 1
    
   # fuhgettaboutit 
-  if !src.is_govdoc and (SourceRecord.where(org_code:ORGCODE,
+  if !src.fed_doc? and (SourceRecord.where(org_code:ORGCODE,
                                             local_id:src.local_id,
                                             deprecated_timestamp:{"$exists":0}).count == 0)
     next

@@ -42,7 +42,7 @@ ARGV.each do | infile |
     @new_src.org_code = ORGCODE 
     @new_src.source = line 
 
-    if !@new_src.is_govdoc
+    if !@new_src.fed_doc?
       puts line
       next
     end
