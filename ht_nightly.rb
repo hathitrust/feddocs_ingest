@@ -98,10 +98,10 @@ updates.each do | line |
       count_008 += 1
       sudoc_count += 1 if new_src.sudocs.count > 0
       gpo_num_count += 1 if new_src.gpo_item_numbers.count > 0 
-      author_count += 1 if new_src.has_approved_author?
+      author_count += 1 if new_src.approved_author?
       if new_src.sudocs.count == 0 and
         new_src.gpo_item_numbers.count == 0 and
-        !new_src.has_approved_author?
+        !new_src.approved_author?
         oclc_count += 1
       end
     end
