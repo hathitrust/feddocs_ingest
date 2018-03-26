@@ -56,7 +56,7 @@ zeph.each do | line |
                                             local_id:src.local_id,
                                             deprecated_timestamp:{"$exists":0}).count == 0)
     next
-  elsif src.is_govdoc
+  elsif src.fed_doc?
     gd_zeph_ids[src.local_id] = 1
   end
 
