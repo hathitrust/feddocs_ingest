@@ -41,6 +41,7 @@ disappearing_holdings_ids = Hash.new(0)
 new_ecs_count = 0
 new_regrec_count = 0
 deleted_ecs_count = 0
+added_entry_count = 0
 zeph.each do | line | 
   count += 1 
 
@@ -63,6 +64,9 @@ zeph.each do | line |
   old_src = SourceRecord.where(org_code: ORGCODE, local_id: src.local_id).first
   if !old_src # a newbie, just add it
     src.save
+    if src.approved_added_entry? 
+      added_entry_count += 1
+    end
     new_zeph_ids[src.local_id] += 1
     res = src.add_to_registry "HT Monthly update: #{fin}"
     new_ecs_count += res[:num_new]
@@ -122,3 +126,4 @@ summ_out.puts "# of non-gd Zephir ids in registry: #{non_gd_ids.keys.count}"
   end
 end
 puts DateTime.now
+puts "number new with approved added_entry:#{added_entry_count}"

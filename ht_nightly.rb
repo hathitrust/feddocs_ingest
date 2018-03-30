@@ -40,6 +40,7 @@ count = 0
 rrcount = 0
 #tracking why it's a govdoc
 author_count = 0
+added_entry_count = 0
 oclc_count = 0
 gpo_num_count = 0
 sudoc_count = 0
@@ -99,6 +100,7 @@ updates.each do | line |
       sudoc_count += 1 if new_src.sudocs.count > 0
       gpo_num_count += 1 if new_src.gpo_item_numbers.count > 0 
       author_count += 1 if new_src.approved_author?
+      added_entry_count += 1 if new_src.approved_added_entry?
       if new_src.sudocs.count == 0 and
         new_src.gpo_item_numbers.count == 0 and
         !new_src.approved_author?
