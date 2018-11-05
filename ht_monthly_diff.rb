@@ -42,6 +42,7 @@ new_ecs_count = 0
 new_regrec_count = 0
 deleted_ecs_count = 0
 added_entry_count = 0
+ae_out = open(__dir__+'/monthly_reports/added_entry_'+Date.today.strftime('%Y_%m_%d')+'.txt', 'w')
 zeph.each do | line | 
   count += 1 
 
@@ -64,7 +65,16 @@ zeph.each do | line |
   old_src = SourceRecord.where(org_code: ORGCODE, local_id: src.local_id).first
   if !old_src # a newbie, just add it
     src.save
-    if src.approved_added_entry? 
+    if !src.u_and_f? and
+        !src.sudocs.any? and
+        !src.gpo_item_numbers.any? and
+        !src.approved_author? and
+        src.approved_added_entry? 
+      ae_out.puts [src.source_id, 
+                   src.oclc_resolved.join(', '),
+                   (src.author_headings || []).join(', '),
+                   (src.publisher_headings || []).join(', ')
+                  ].join("\t")
       added_entry_count += 1
     end
     new_zeph_ids[src.local_id] += 1
@@ -75,6 +85,18 @@ zeph.each do | line |
     # if registry_src.enum_chrons & old_src.enum_chrons != src.enum_chrons
     old_src.source = line
     old_src.save
+    if !old_src.u_and_f? and
+        !old_src.sudocs.any? and
+        !old_src.gpo_item_numbers.any? and
+        !old_src.approved_author? and
+        old_src.approved_added_entry? 
+      ae_out.puts [old_src.source_id, 
+                   old_src.oclc_resolved.join(', '),
+                   (old_src.author_headings || []).join(', '),
+                   (old_src.publisher_headings || []).join(', ')
+                  ].join("\t")
+      added_entry_count += 1
+    end
     res = old_src.update_in_registry "HT Monthly update: #{fin}"
     new_ecs_count += res[:num_new]
     new_holdings_ids[old_src.local_id] += res[:num_new]
