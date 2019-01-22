@@ -9,7 +9,6 @@ require 'normalize'
 require 'json'
 require 'dotenv'
 require 'pp'
-include Registry::Series
 
 SourceRecord = Registry::SourceRecord
 RegistryRecord = Registry::RegistryRecord
@@ -44,6 +43,7 @@ added_entry_count = 0
 oclc_count = 0
 gpo_num_count = 0
 sudoc_count = 0
+pub_count = 0
 count_008 = 0
 
 updates.each do | line | 
@@ -101,6 +101,7 @@ updates.each do | line |
       gpo_num_count += 1 if new_src.gpo_item_numbers.count > 0 
       author_count += 1 if new_src.approved_author?
       added_entry_count += 1 if new_src.approved_added_entry?
+      pub_count += 1 if new_src.accept_because_of_field? 
       if new_src.sudocs.count == 0 and
         new_src.gpo_item_numbers.count == 0 and
         !new_src.approved_author?
@@ -119,6 +120,7 @@ puts "# of new sources with Author indicating GovDoc: #{author_count}"
 puts "# of new sources with GPO# indicating GovDoc: #{gpo_num_count}"
 puts "# of new sources with SuDoc indicating GovDoc: #{sudoc_count}"
 puts "# of new sources with OCLC indicating GovDoc: #{oclc_count}"
+puts "# of new sources with Publisher indicating GovDoc: #{pub_count}"
 #PP.pp src_count 
 
 rescue Exception => e
