@@ -30,24 +30,23 @@ rrcount = 0
 new_count = 0
 update_count = 0
 
-#1. get highest existing GPO id 
-# local_id is unpadded string, need to get them all and then sort
-highest_id = 0
-SourceRecord.where(org_code:"dgpo", 
-                   deprecated_timestamp:{"$exists":0}).pluck(:local_id).each do |lid|
-  if lid.to_i > highest_id
-    highest_id = lid.to_i
-  end
-end
-
-puts "highest id: #{highest_id}"
+#1. Set our start at 0. We won't request what we already have
+nil_count = 0
+current_id = 0 
 
 #2. ask for recs by id until we get too many consecutive nils 
-nil_count = 0
-current_id = highest_id.to_i
 while nil_count < 10 do #arbitrary
-  sleep(5) #be polite
   current_id += 1
+
+  src_count = SourceRecord.where(org_code:"dgpo",
+                           local_id: current_id.to_s,
+                           deprecated_timestamp:{"$exists":0}).no_timeout.count
+  if src_count != 0
+    nil_count = 0 # reset, looking for consecutive
+    next
+  end
+  
+  sleep(5) #be polite
   
   rset = con.search("@attr 1=12 #{current_id}")
   if !rset[0]
@@ -67,7 +66,7 @@ while nil_count < 10 do #arbitrary
   gpo_id = marc['001'].value.gsub(/^0+/, '')
   line = marc.to_hash.to_json #round about way of doing things 
   src = SourceRecord.where(org_code:"dgpo", 
-                           local_id:gpo_id).first
+                           local_id:gpo_id).first # obv this shouldn't exist
   src ||= SourceRecord.new
   new_count += 1
   src.org_code = "dgpo"
