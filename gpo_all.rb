@@ -1,6 +1,3 @@
-# run very occasionally.
-# Requests every GPO record sequentially to fill in missing/incomplete records
-#
 require 'zoom'
 require 'pp'
 require 'marc'
@@ -14,7 +11,7 @@ RegistryRecord = Registry::RegistryRecord
 
 Dotenv.load!
 
-Mongoid.load!(File.expand_path("../config/mongoid.yml", __FILE__), :development)
+Mongoid.load!(ENV['MONGOID_CONF'], :production)
 
 con = ZOOM::Connection.new()
 con.user = 'z39'
@@ -32,104 +29,57 @@ encoding_options = {
 rrcount = 0
 new_count = 0
 update_count = 0
+
+#1. Set our start at 0. We won't request what we already have
 nil_count = 0
-bad_001_count = 0
-rr_update_count = 0
+current_id = 0 
 
-#1. get highest existing GPO id 
-# Unlike the weekly update, we will stop here. 
-highest_id = SourceRecord.where(org_code:"dgpo").max(:local_id)
-puts "highest id: #{highest_id}"
+#2. ask for recs by id until we get too many consecutive nils 
+while nil_count < 10 do #arbitrary
+  current_id += 1
 
-#2. ask for recs by id until we get to the highest id 
-(582501..highest_id.to_i).each do |current_id|
-  sleep(1.1) #be polite
-
-  try_count = 0
-  begin  
-    try_count += 1
-    rset = con.search("@attr 1=12 #{current_id}")
-  rescue Exception => e
-    if try_count < 10
-      sleep(61)
-      con.connect('z3950.catalog.gpo.gov', 9991)
-      puts e.backtrace
-      puts "retry: #{current_id}"
-      retry 
-    end
+  if current_id % 10000 == 0 
+    puts current_id
+    STDOUT.flush
   end
-
+  sleep(1.1) #be polite
+  
+  rset = con.search("@attr 1=12 #{current_id}")
   if !rset[0]
     nil_count += 1
     puts "nil at #{current_id}"
     next
+  else
+    nil_count = 0 #reset, looking for consecutive
   end
 
   r = MARC::Reader.new(StringIO.new(rset[0].raw), encoding_options)
   marc = r.first
   if marc['001'].nil?
-    bad_001_count += 1
     next
   end
 
-  gpo_id = marc['001'].value.to_i
+  gpo_id = marc['001'].value.gsub(/^0+/, '')
   line = marc.to_hash.to_json #round about way of doing things 
-  src = SourceRecord.where(org_code:"dgpo", local_id:gpo_id.to_s).first
-  if src.nil?
-    src = SourceRecord.new
-    new_count += 1
-    src.org_code = "dgpo"
-  else
-    update_count += 1
-  end
+  src = SourceRecord.where(org_code:"dgpo", 
+                           local_id:gpo_id).first 
+  src ||= SourceRecord.new
+  new_count += 1
+  src.org_code = "dgpo"
   src.source = line
-  if src.enum_chrons == []
-    src.enum_chrons << ""
-  end
- 
-  #this has to come after src.source = line which also sets local_id
-  #src.extract_local_id set it as a 0 padded string. 0 padding is evil
-  src.local_id = gpo_id.to_i.to_s
-
   # '$' has snuck into at least one 040. It's wrong and Mongo chokes on it.
   s040 = src.source['fields'].select {|f| f.keys[0] == '040'}
   if s040 != []
     s040[0]['040']['subfields'].delete_if {|sf| sf.keys[0] == '$'}
   end
-  
   src.in_registry = true
   src.save
+  res = src.add_to_registry "GPO full update 2019-03-05."
+  rrcount += res[:num_new]
 
-  #3. cluster/create regrecs
-  src.enum_chrons.each do |ec| 
-    if regrec = RegistryRecord::cluster( src, ec)
-      regrec.add_source(src)
-      rr_update_count += 1
-    else
-      regrec = RegistryRecord.new([src.source_id], ec, "GPO #{Date.today}")
-      rrcount += 1
-    end
-     
-    #GPO does something dumb with DNA
-    if !regrec.subject_t.nil? and regrec.subject_t.include? "Norske arbeiderparti."
-      regrec.subject_t.delete("Norske arbeiderparti.")
-      if !regrec.subject_t.include? "DNA"
-        regrec.subject_t << "DNA"
-      end
-      regrec.subject_topic_facet.delete("Norske arbeiderparti.")
-      if !regrec.subject_topic_facet.include? "DNA"
-        regrec.subject_topic_facet << "DNA"
-      end
-    end
-
-    regrec.save
-  end
 end
 
 puts "gpo new regrec count: #{rrcount}"
-puts "gpo updated regrec count: #{rr_update_count}"
 puts "gpo new srcs: #{new_count}"
-puts "gpo source updates: #{update_count}"
-puts "nil count: #{nil_count}"
-puts "bad 001 count: #{bad_001_count}"
+#puts "gpo regrec updates: #{update_count}"
 
