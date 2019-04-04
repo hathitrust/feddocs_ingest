@@ -35,7 +35,7 @@ nil_count = 0
 current_id = 0 
 
 #2. ask for recs by id until we get too many consecutive nils 
-while nil_count < 10 do #arbitrary
+while nil_count < 20 do #arbitrary
   current_id += 1
 
   src_count = SourceRecord.where(org_code:"dgpo",
