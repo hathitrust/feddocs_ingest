@@ -7,7 +7,6 @@ require 'normalize'
 require 'json'
 require 'dotenv'
 require 'pp'
-include Registry::Series
 
 SourceRecord = Registry::SourceRecord
 RegistryRecord = Registry::RegistryRecord
@@ -72,8 +71,8 @@ zeph.each do | line |
         src.approved_added_entry? 
       ae_out.puts [src.source_id, 
                    src.oclc_resolved.join(', '),
-                   (src.author_headings || []).join(', '),
-                   (src.publisher_headings || []).join(', ')
+                   (src.author || []).join(', '),
+                   (src.publisher || []).join(', ')
                   ].join("\t")
       added_entry_count += 1
     end
