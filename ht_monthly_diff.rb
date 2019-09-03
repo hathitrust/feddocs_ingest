@@ -91,8 +91,8 @@ zeph.each do | line |
         old_src.approved_added_entry? 
       ae_out.puts [old_src.source_id, 
                    old_src.oclc_resolved.join(', '),
-                   (old_src.author_headings || []).join(', '),
-                   (old_src.publisher_headings || []).join(', ')
+                   (old_src.author || []).join(', '),
+                   (old_src.publisher || []).join(', ')
                   ].join("\t")
       added_entry_count += 1
     end
