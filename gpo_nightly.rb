@@ -62,6 +62,7 @@ rset.each_record do |rec|
   src.save
   res = src.add_to_registry "GPO nightly."
   rrcount += res[:num_new]
+  sleep(2)
 end
 
 puts "gpo new regrec count: #{rrcount}"
