@@ -1,3 +1,9 @@
+# Don't use this. Use the gpo_nightly or gpo_yearly
+#
+# This pulls based on local id number which is a terrible way of doing it
+
+
+
 require 'zoom'
 require 'pp'
 require 'marc'
@@ -33,6 +39,11 @@ update_count = 0
 #1. Set our start at 0. We won't request what we already have
 nil_count = 0
 current_id = 0 
+
+#1. get highest existing GPO id 
+highest_id = SourceRecord.where(org_code:"dgpo").max(:local_id).to_i
+puts "highest id: #{highest_id}"
+current_id = highest_id - 1000
 
 #2. ask for recs by id until we get too many consecutive nils 
 while nil_count < 20 do #arbitrary
