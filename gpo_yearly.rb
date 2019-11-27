@@ -47,8 +47,17 @@ update_count = 0
 
 while d <= dend
   dstring = d.strftime("%Y%m%d")
-  
-  rset = con.search("@attr 1=1012 #{dstring}*")
+ 
+  begin 
+    rset = con.search("@attr 1=1012 #{dstring}*")
+  rescue
+    puts "Lost connection. Waiting 5 minutes. Trying again."
+    sleep(300)
+    STDOUT.flush
+    con.connect('z3950.catalog.gpo.gov', 9991)
+    rset = con.search("@attr 1=1012 #{dstring}*")
+  end
+
   puts "num records:#{rset.size}"
  
   rset.each_record do |rec|
@@ -75,14 +84,19 @@ while d <= dend
       s040[0]['040']['subfields'].delete_if {|sf| sf.keys[0] == '$'}
     end
     src.in_registry = true
-    src.save
-    res = src.add_to_registry "GPO yearly: #{year.to_s}."
-    rrcount += res[:num_new]
+    begin
+      src.save
+      res = src.add_to_registry "GPO yearly: #{year.to_s}."
+      rrcount += res[:num_new]
+    rescue 
+      puts m.to_json
+    end
     sleep(1)
   end
   
   if d.day == 1
     puts d
+    STDOUT.flush
   end
   d = d.next
 end
