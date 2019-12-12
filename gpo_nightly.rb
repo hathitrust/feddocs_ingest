@@ -54,7 +54,7 @@ rset.each_record do |rec|
   gpo_local_id = m['001'].value.gsub(/^0+/, '')
   src = SR.where(org_code:"dgpo",
                  local_id:gpo_local_id).first
-  puts gpo_local_id
+  #puts gpo_local_id
   if src
     src.source = m.to_hash.to_json
     num_updated += 1
