@@ -9,6 +9,7 @@ require 'normalize'
 require 'json'
 require 'dotenv'
 require 'pp'
+require 'pry'
 
 SourceRecord = Registry::SourceRecord
 RegistryRecord = Registry::RegistryRecord
@@ -54,7 +55,7 @@ updates.each do | line |
   new_src = SourceRecord.new
   new_src.org_code = "miaahdl"
   new_src.source = line
- 
+
   # fuhgettaboutit 
   if !new_src.fed_doc? and (SourceRecord.where(org_code:ORGCODE,
                                                 local_id:new_src.local_id,
@@ -62,11 +63,6 @@ updates.each do | line |
     next
   end
 
-  marc = JSON.parse line
-
-  field_008 = marc['fields'].find {|f| f['008'] }['008']
-
-     
   # pre-existing source record that has been updated
   src = SourceRecord.where(org_code: ORGCODE, local_id: new_src.local_id).first
   if src
