@@ -38,6 +38,11 @@ puts dstring
 
 rset = con.search("@attr 1=1012 #{dstring}*")
 puts "num records:#{rset.size}"
+
+if ARGV.include?("--test_connection")
+  raise "only testing connection" # no further processing
+end
+
 rrcount = 0
 new_count = 0
 num_updated = 0
